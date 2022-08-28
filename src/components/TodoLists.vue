@@ -1,6 +1,8 @@
 <template>
   <v-card color="#b3c5d4" class="todoListCard">
     <h1 class="title">Todo List</h1>
+    <p v-if="limit1">{{ limit1 }}</p>
+    <p class="warningMess" v-if="limit2">{{ limit2 }}</p>
     <v-btn class="btn-task" color="#2778e2" @click="isAddFormOpen = true"
       >Add Task</v-btn
     >
@@ -56,12 +58,12 @@
       </template>
     </v-data-table>
 
-    <v-pagination
+    <!-- <v-pagination
       class="pagination"
       v-model="page"
       dark
       :length="pageCount"
-    ></v-pagination>
+    ></v-pagination> -->
 
     <v-dialog width="400px" v-model="isdeleteWarningOpen">
       <v-card class="modalToDelete" width="400px">
@@ -77,13 +79,18 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <!-- <v-card class="cardTable" color="#cae6ff" height="400px"
-      ><div v-for="todo in todos" v-bind:key="todo.id">
-        <todo-item
-          v-bind:todo="todo"
-          @deltask="$emit('deltask', todo.id)"
-        /></div
-    ></v-card> -->
+    <v-dialog width="400px" v-model="sameTaskName">
+      <v-card class="modalToDelete" width="400px">
+        <h2>Ooopps !</h2>
+        <br />
+        <v-card-text>
+          <p>The task name you want to add is already exist</p>
+        </v-card-text>
+        <v-card-actions class="del-btn">
+          <v-btn @click="sameTaskName = false">ok</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 <script>
@@ -101,7 +108,10 @@ export default {
       itemsPerPage: 5,
       idToDelete: null,
       todolist: this.todos,
+      limit1: "Note: Maximum of 5 task only..",
+      limit2: null,
       emptyState: null,
+      sameTaskName: false,
       emptyState2: "You can add task/goals by clicking Add Task Button",
       todos: [
         {
@@ -120,6 +130,7 @@ export default {
           completed: false,
         },
       ],
+      taskNames: [],
       isAddFormOpen: false,
       isdeleteWarningOpen: false,
     };
@@ -135,15 +146,23 @@ export default {
       if (this.todos.length < 1) {
         this.emptyState = "Currenlty no task to do!";
       }
+      if (this.todos.length < 6) {
+        this.limit1 = "Note: Maximum of 5 task only..";
+        this.limit2 = null;
+      }
       this.isdeleteWarningOpen = false;
     },
     taskName(taskName) {
-      this.todos.push({
-        id: nanoid(),
-        taskTitle: taskName,
-        completed: false,
-      });
-
+      if (this.todos.length >= 5) {
+        this.limit2 = "You have reach the maximum task..";
+        this.limit1 = null;
+      } else {
+        this.todos.push({
+          id: nanoid(),
+          taskTitle: taskName,
+          completed: false,
+        });
+      }
       this.emptyState = null;
       this.isAddFormOpen = false;
     },
@@ -170,6 +189,9 @@ export default {
   /* border: 2px solid blue ; */
   background-color: rgb(157, 169, 179);
 }
+.warningMess {
+  color: #ff0000;
+}
 .btn-task {
   position: absolute;
   right: 50px;
@@ -177,6 +199,12 @@ export default {
 }
 .title {
   margin-bottom: 50px;
+}
+p {
+  font-size: 18px;
+}
+tr {
+  border: 1px solid;
 }
 .Ttitle {
   font-size: 20px;
@@ -188,6 +216,9 @@ export default {
 .todolistTable {
   color: #ff0000(245, 6, 6);
   margin: 5px;
+}
+.v-data-table {
+  line-height: normal;
 }
 
 .taskTitle {
